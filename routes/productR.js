@@ -69,48 +69,68 @@ router.get('/:id', async (req , res) => {
     res.send(products)
 })
 
-router.put('/:id',upload.single('image'), async (req, res) => {
+
+router.put('/:id', upload.single('image'), async (req, res) => {
     try {
-
-        if(!mongoose.isValidObjectId(req.params.id)){
-            res.status(400).send('Invalid Product Id')
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).send('Invalid Product Id');
         }
 
-        const category = await Category.findById(req.body.category);
-        if (!category) {
-            return res.status(400).send('Invalid Category');
+        const productId = req.params.id;
+        const { name, description, price, countInStock, rating, numReviews, isFeatured, categoryId } = req.body;
+        let imagePath;
+
+        // Check if an image file is included in the request
+        if (req.file) {
+            imagePath = req.file.path;
         }
 
-        const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.id,
-            {
-                name: req.body.name,
-                description: req.body.description,
-                image: req.file.path,
-                price: req.body.price,
-                category: category,
-                countInStock: req.body.countInStock,
-                rating: req.body.rating,
-                numReviews :req.body.numReviews,
-                isFeatured: req.body.isFeatured
-            },
-            { new: true } 
-        );
+        // Create an object with updated product data
+        const updatedData = {
+            name,
+            description,
+            price,
+            countInStock,
+            rating,
+            numReviews,
+            isFeatured
+        };
 
-        if (!updatedProduct) {
-            return res.status(404).send('The product cannot be updated');
+        // Add imagePath to updatedData if available
+        if (imagePath) {
+            updatedData.image = imagePath;
         }
 
-        res.status(200).send(updatedProduct);
+        if (categoryId) {
+            updatedData.category = categoryId;
+        }
+
+        // Find the product by ID and update its data
+        const productData = await Product.findByIdAndUpdate(productId, { $set: updatedData }, { new: true });
+
+        if (!productData) {
+            return res.status(404).json({
+                success: false,
+                msg: 'Product not found'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            msg: 'Product updated successfully',
+            product: productData
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Internal Server Error');
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
     }
 });
 
+
 router.delete('/:id', (req, res) =>{
     Product.findByIdAndDelete(req.params.id).then(product =>{
-        
 
         if(product){
             return res.status(200).json({success: true, message: 'the product is deleted successfully'})

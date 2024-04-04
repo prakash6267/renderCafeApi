@@ -48,9 +48,49 @@ router.post('/', upload.single('image'),async (req,res)=>{
 
 })
 
+router.put('/:id', upload.single('image'), async (req, res) => {
+    try {
+        const bannerId = req.params.id;
+        const { offer, offerDate } = req.body;
+        let imagePath;
+       
+        if (req.file) {
+            imagePath = req.file.path;
+        }
+        // Create an object with updated data
+        const updatedData = {
+            offer,
+            offerDate
+        };
+        // Add imagePath to updatedData if available
+        if (imagePath) {
+            updatedData.banner = imagePath;
+        }
+        const bannerData = await Banner.findByIdAndUpdate(bannerId, { $set: updatedData }, { new: true });
+
+        if (!bannerData) {
+            return res.status(404).json({
+                success: false,
+                msg: 'Banner not found'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            msg: 'Banner updated successfully',
+            category: bannerData
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
+    }
+});
+
 router.delete('/:id', (req, res)=>{
        
-  Banner.findOneAndDelete(req.params.id)
+  Banner.findByIdAndDelete(req.params.id)
   .then(banner =>{
       if(banner){
           return res.status(200).json({

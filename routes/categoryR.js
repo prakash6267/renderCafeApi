@@ -47,26 +47,55 @@ const upload = require('../helpers/multer')
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+  
 
-router.put('/:id', async (req, res) =>{
-    const category = await Category.findByIdAndUpdate(
-        req.params.id,
-        {
-            name: req.body.name,
-            image: req.body.image,
+  router.put('/:id', upload.single('image'), async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        const { name, isSwitchOn } = req.body;
+        let imagePath;
+        // Check if an image file is included in the request
+        if (req.file) {
+            imagePath = req.file.path;
+        }
+        // Create an object with updated data
+        const updatedData = {
+            name,
+            isSwitchOn
+        };
 
-        },
-        { new: true }
-    )
-    if(!category)
-        return res.status(404).send('Category cannot be updated')
+        // Add imagePath to updatedData if available
+        if (imagePath) {
+            updatedData.image = imagePath;
+        }
 
-    res.status(200).send(category);
-})
+        // Find the category by ID and update its data
+        const categoryData = await Category.findByIdAndUpdate(categoryId, { $set: updatedData }, { new: true });
+
+        if (!categoryData) {
+            return res.status(404).json({
+                success: false,
+                msg: 'Category not found'
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            msg: 'Category updated successfully',
+            category: categoryData
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
+    }
+});
+
 
 router.delete('/:id', (req, res)=>{
        
-    Category.findOneAndDelete(req.params.id)
+    Category.findByIdAndDelete(req.params.id)
     .then(category =>{
         if(category){
             return res.status(200).json({
