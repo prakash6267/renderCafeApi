@@ -118,7 +118,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         return res.status(200).json({
             success: true,
             msg: 'Product updated successfully',
-            product: productData
+            product: [productData]
         });
     } catch (error) {
         return res.status(400).json({
