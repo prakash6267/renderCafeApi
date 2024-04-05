@@ -100,9 +100,9 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         if (imagePath) {
             updatedData.image = imagePath;
         }
-
-        if (categoryId) {
-            updatedData.category = categoryId;
+        const category = await Category.findById(req.body.categoryId)
+        if (category) {
+            updatedData.category = category;
         }
 
         // Find the product by ID and update its data
