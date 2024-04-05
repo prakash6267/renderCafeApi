@@ -69,7 +69,6 @@ router.get('/:id', async (req , res) => {
     res.send(products)
 })
 
-
 router.put('/:id', upload.single('image'), async (req, res) => {
     try {
         if (!mongoose.isValidObjectId(req.params.id)) {
@@ -100,13 +99,13 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         if (imagePath) {
             updatedData.image = imagePath;
         }
-        const category = await Category.findById(req.body.categoryId)
-        if (category) {
-            updatedData.category = category;
+
+        if (categoryId) {
+            updatedData.category = categoryId;
         }
 
         // Find the product by ID and update its data
-        const productData = await Product.findByIdAndUpdate(productId, { $set: updatedData }, { new: true });
+        const productData = await Product.findByIdAndUpdate(productId, { $set: updatedData }, { new: true }).populate('category');
 
         if (!productData) {
             return res.status(404).json({
