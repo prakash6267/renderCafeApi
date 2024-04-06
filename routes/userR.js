@@ -64,7 +64,7 @@ router.get ('/:id', async (req, res) => {
 })
 
 router.delete('/:id', (req, res) => {
-    User.findOneAndDelete(req.params.id).then(user => {
+    User.findByIdAndDelete(req.params.id).then(user => {
         if (user) {
             return res.status(200).json({ success: true, message: 'User deleted successfully' })
         } else {
