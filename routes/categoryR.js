@@ -34,7 +34,8 @@ const upload = require('../helpers/multer')
   
   router.get('/', async (req, res) => {
     try {
-      const categories = await Category.find();
+      //const categories = await Category.find();
+      const categories = await Category.find({ isSwitchOn: true });
 
       return res.status(200).json({
         success: true,
