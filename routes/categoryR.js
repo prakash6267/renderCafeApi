@@ -49,6 +49,22 @@ const upload = require('../helpers/multer')
     }
   });
 
+  router.get('/admin', async (req, res) => {
+    try {
+      const categories = await Category.find();
+
+      return res.status(200).json({
+        success: true,
+        msg:'User Profile Data!',
+        data:categories
+    })
+      
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
+
 
   router.put('/show/:id', async (req,res) => {
     try {
