@@ -51,22 +51,32 @@ const upload = require('../helpers/multer')
 
 
   router.put('/show/:id', async (req,res) => {
-    try{
-        const { categoryId } = req.params;
-    const { isSwitchOn } = req.body;
+    try {
+        const categoryId = req.params.id;
+        const { isSwitchOn } = req.body;
 
-    const updatedSwitch = await Switch.findByIdAndUpdate(categoryId, { isSwitchOn }, { new: true });
+        const updatedData = { isSwitchOn };
 
-    if (!updatedSwitch) {
-      return res.status(404).send('Switch not found');
-    }
+        // Find the category by ID and update its data
+        const categoryData = await Category.findByIdAndUpdate(categoryId, { $set: updatedData }, { new: true });
 
-    res.json(updatedSwitch);
+        if (!categoryData) {
+            return res.status(404).json({
+                success: false,
+                msg: 'Category not found'
+            });
+        }
 
-    }
-    catch(error){
-       console.error(error);
-       res.status(500).json({error  : 'Internal Server Error'})
+        return res.status(200).json({
+            success: true,
+            msg: 'Category isSwitch updated successfully',
+            category: categoryData
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            msg: error.message
+        });
     }
   })
   
