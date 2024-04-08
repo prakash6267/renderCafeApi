@@ -66,15 +66,13 @@ const upload = require('../helpers/multer')
   });
 
 
-  router.put('/show/:id', async (req,res) => {
+  router.put('/show/:id', async (req, res) => {
     try {
         const categoryId = req.params.id;
-        const { isSwitchOn } = req.body;
+        const isSwitchOn = req.query.isSwitchOn;
 
-        const updatedData = { isSwitchOn };
-
-        // Find the category by ID and update its data
-        const categoryData = await Category.findByIdAndUpdate(categoryId, { $set: updatedData }, { new: true });
+        // Find the category by ID
+        const categoryData = await Category.findById(categoryId);
 
         if (!categoryData) {
             return res.status(404).json({
@@ -82,6 +80,10 @@ const upload = require('../helpers/multer')
                 msg: 'Category not found'
             });
         }
+
+        // Update isSwitchOn field
+        categoryData.isSwitchOn = isSwitchOn;
+        await categoryData.save();
 
         return res.status(200).json({
             success: true,
@@ -94,7 +96,7 @@ const upload = require('../helpers/multer')
             msg: error.message
         });
     }
-  })
+});
   
 
   router.put('/:id', upload.single('image'), async (req, res) => {
