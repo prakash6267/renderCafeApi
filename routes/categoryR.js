@@ -48,6 +48,27 @@ const upload = require('../helpers/multer')
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+
+  router.put('/show/:id', async (req,res) => {
+    try{
+        const { categoryId } = req.params;
+    const { isSwitchOn } = req.body;
+
+    const updatedSwitch = await Switch.findByIdAndUpdate(categoryId, { isSwitchOn }, { new: true });
+
+    if (!updatedSwitch) {
+      return res.status(404).send('Switch not found');
+    }
+
+    res.json(updatedSwitch);
+
+    }
+    catch(error){
+       console.error(error);
+       res.status(500).json({error  : 'Internal Server Error'})
+    }
+  })
   
 
   router.put('/:id', upload.single('image'), async (req, res) => {
